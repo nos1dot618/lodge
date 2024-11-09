@@ -74,5 +74,5 @@ int main() {
 2024-11-02 13:55:34 [DEBUG]: Debugging value: 100
 2024-11-02 13:55:34 [WARNING]: This is a warning message.
 2024-11-02 13:55:34 [ERROR]: This is an error message.
-2024-11-02 13:55:34 [INFO]: This is a fatal error message.
+2024-11-02 13:55:34 [FATAL]: This is a fatal error message.
 ```

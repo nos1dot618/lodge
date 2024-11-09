@@ -19,6 +19,7 @@ static const LogLevel default_log_level = LOG_INFO;
 static LogLevel current_log_level = default_log_level;
 static FILE *log_filepath = NULL;
 static pthread_mutex_t mutex;
+static int log_timestamp = 1;
 
 #define lodge_assert(condition, fmt, ...)                                  \
     do {                                                                   \
@@ -33,6 +34,7 @@ void lodge_constructor(const char *filepath);
 void lodge_set_log_level(LogLevel level);
 const char *lodge_get_current_timestamp();
 void lodge_log_message(LogLevel level, const char *fmt, ...);
+void lodge_toggle_timestamp();
 void lodge_destructor();
 
 static const char *get_log_level_str(LogLevel level) {
@@ -46,7 +48,7 @@ static const char *get_log_level_str(LogLevel level) {
     case LOG_ERROR:
         return "ERROR";
     case LOG_FATAL:
-        return "INFO";
+        return "FATAL";
     default:
         lodge_assert(0, "unexpected log level '%d'", level);
     }
@@ -84,7 +86,10 @@ void lodge_log_message(LogLevel level, const char *fmt, ...) {
     const char *timestamp = lodge_get_current_timestamp();
     const char *log_level_str = get_log_level_str(level);
     if (log_filepath) {
-        fprintf(log_filepath, "%s [%s]: ", timestamp, log_level_str);
+		if (log_timestamp) {
+			fprintf(log_filepath, "%s ", timestamp);
+		}
+        fprintf(log_filepath, "[%s]: ", log_level_str);
         va_list args;
         va_start(args, fmt);
         vfprintf(log_filepath, fmt, args);
@@ -92,7 +97,10 @@ void lodge_log_message(LogLevel level, const char *fmt, ...) {
         fprintf(log_filepath, "\n");
         fflush(log_filepath);
     } else {
-        fprintf(stdout, "%s [%s]: ", timestamp, log_level_str);
+		if (log_timestamp) {
+			fprintf(stdout, "%s ", timestamp);
+		}
+        fprintf(stdout, "[%s]: ", log_level_str);
         va_list args;
         va_start(args, fmt);
         vfprintf(stdout, fmt, args);
@@ -117,6 +125,10 @@ void lodge_log_message(LogLevel level, const char *fmt, ...) {
         lodge_destructor();                                    \
         exit(EXIT_FAILURE);                                    \
     } while (0)
+
+void lodge_toggle_timestamp() {
+	log_timestamp = !log_timestamp;
+}
 
 // Clean up logging resources
 void lodge_destructor() {
